@@ -26,6 +26,7 @@ import util.lr_decay as lrd
 import util.misc as misc
 from util.pos_embed import interpolate_pos_embed
 from util.misc import NativeScalerWithGradNormCount as NativeScaler
+from util.misc import save_model
 
 import models_YaTC
 
@@ -136,6 +137,7 @@ def get_args_parser():
     parser.add_argument('--dist_on_itp', action='store_true')
     parser.add_argument('--dist_url', default='env://',
                         help='url used to set up distributed training')
+    parser.add_argument("--patience", default=10, type=int, help="Early stopping patience")
 
     return parser
 
@@ -304,6 +306,7 @@ def main(args):
     start_time = time.time()
     max_accuracy = 0.0
     max_f1 = 0.0
+    epochs_without_improvement = 0
 
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
@@ -319,7 +322,25 @@ def main(args):
         test_stats = evaluate(data_loader_val, model, device)
 
         print(f"Accuracy of the network on the {len(dataset_val)} test images: {test_stats['acc1']:.4f}")
-        max_accuracy = max(max_accuracy, test_stats["acc1"])
+        # added early stopping and saving the model
+        if test_stats["acc1"] > max_accuracy:
+            print(f"=> New best Accuracy: {test_stats['acc1']:.4f}. Saving model...")
+            max_accuracy = test_stats["acc1"]
+            epochs_without_improvement = 0
+            misc.save_model(
+                args=args, epoch=epoch, model=model,
+                model_without_ddp=model_without_ddp,
+                optimizer=optimizer, loss_scaler=loss_scaler,
+                name="best_model.pth"
+            )
+        else:
+            epochs_without_improvement += 1
+            print(f"=> No improvement in Accuracy for {epochs_without_improvement} epoch(s)")
+
+        if epochs_without_improvement >= args.patience:
+            print(f"Early stopping triggered. No improvement in Accuracy for {args.patience} consecutive epochs.")
+            break
+
         print(f"F1 of the network on the {len(dataset_val)} test images: {test_stats['macro_f1']:.4f}")
         max_f1 = max(max_f1, test_stats["macro_f1"])
         print(f'Max Accuracy: {max_accuracy:.4f}')
