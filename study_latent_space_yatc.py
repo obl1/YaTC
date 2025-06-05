@@ -44,24 +44,26 @@ class TrafficTransformerEmbedder(nn.Module):
         x = x[:, 1:, :].reshape(B, 4, 20, -1).mean(axis=1)
         x = torch.cat((cls, x), dim=1)
 
-        return self.model.fc_norm(x)
+        return self.model.fc_norm(x), cls
     
     def embed_packets(self,x):
+        packet_embeddings = []
         B, C, H, W = x.shape
         x = x.reshape(B, C, 5, -1)
         for i in range(5):
             packet_x = x[:, :, i, :].reshape(B, C, -1, 40)
-            packet_features = self.forward_packet_features(packet_x, i)
+            packet_features, cls = self.forward_packet_features(packet_x, i)
+            packet_embeddings.append(cls)
             if i == 0:
                 all_packets = packet_features
             else:
                 all_packets = torch.cat((all_packets, packet_features), dim=1)
 
-        return all_packets
+        return all_packets, torch.cat(packet_embeddings)
 
     def embed(self, x):
         B, C, H, W = x.shape
-        x = self.embed_packets(x)
+        x, _ = self.embed_packets(x)
         
         for blk in self.model.blocks:
             x = blk(x)
@@ -198,7 +200,8 @@ def generate_packet_embeddings(embedder, dl, device):
     for x, y in tqdm(dl, total=len(dl)): 
         x = x.to(device)
         y = y.to(device)
-        embeddings.append(embedder.embed_packets(x))
+        _, image_pkt_embeddings = embedder.embed_packets(x)
+        embeddings.append(image_pkt_embeddings)
         emb_labels.append(y)
     embeddings = torch.cat(embeddings)
     emb_labels = torch.cat(emb_labels)
