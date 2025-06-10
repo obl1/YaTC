@@ -202,7 +202,8 @@ def generate_packet_embeddings(embedder, dl, device):
         y = y.to(device)
         _, image_pkt_embeddings = embedder.embed_packets(x)
         embeddings.append(image_pkt_embeddings)
-        emb_labels.append(y)
+        for _ in range(5):
+            emb_labels.append(y)
     embeddings = torch.cat(embeddings)
     emb_labels = torch.cat(emb_labels)
 
