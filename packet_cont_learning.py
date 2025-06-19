@@ -83,6 +83,7 @@ def load_yatc_model(model_path, num_classes, device, from_pretrained=False):
     )
     checkpoint_model = torch.load(model_path, map_location='cpu')
     state_dict = checkpoint_model['model']
+    
     if from_pretrained:
         for k in ['head.weight', 'head.bias']:
             if k in checkpoint_model and checkpoint_model[k].shape != state_dict[k].shape:
@@ -105,7 +106,13 @@ def load_yatc_model(model_path, num_classes, device, from_pretrained=False):
     model.to(device)
     return model
 
-def build_dl(path: Union[str, Path], batch_size=64, is_train=True):
+def collect_for_supcon(batch):
+    X = torch.stack([item[0] for item in batch])
+    batch_size = X.size(0)
+    y = torch.arange(batch_size).repeat(5)
+    return X, y
+
+def build_supcon_dl(path: Union[str, Path], batch_size=128, is_train=True):
     if isinstance(path, str):
         path = Path(path)
 
@@ -119,6 +126,6 @@ def build_dl(path: Union[str, Path], batch_size=64, is_train=True):
     ])
     root = path / 'train' if is_train else path / 'test'
     dataset = datasets.ImageFolder(root, transform=transform)
-    dl = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+    dl = DataLoader(dataset, batch_size=batch_size, shuffle=True, collate_fn=collect_for_supcon)
 
     return dl

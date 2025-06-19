@@ -13,8 +13,6 @@ from supcon_util import set_optimizer, save_model
 from supcon_loss import SupConLoss
 
 
-
-
 def create_yatc_packet_model(model_path, num_classes, device):
     model = load_yatc_model(model_path, num_classes, device, from_pretrained=True)
     return PacketYaTC(model)
