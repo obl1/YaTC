@@ -9,6 +9,9 @@ from torch.utils.data import DataLoader
 from util.pos_embed import interpolate_pos_embed
 from timm.models.layers import trunc_normal_
 from typing import List, Tuple, Union
+from torchvision.datasets import ImageFolder
+
+
 
 class PacketYaTC(nn.Module):
     """

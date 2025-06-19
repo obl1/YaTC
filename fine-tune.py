@@ -106,8 +106,6 @@ def get_args_parser():
                         help='finetune from checkpoint')
     parser.add_argument('--data_path', default='./data/ISCXVPN2016_MFR', type=str,
                         help='dataset path')
-    parser.add_argument('--nb_classes', default=7, type=int,
-                        help='number of the classification types')
     parser.add_argument('--output_dir', default='',
                         help='path where to save, empty for no saving')
     parser.add_argument('--log_dir', default='./output_dir',
@@ -176,6 +174,7 @@ def main(args):
     dataset_val = build_dataset(is_train=False, args=args)
 
     labels = dataset_val.classes
+    nb_classes = len(labels)
 
     if True:  # args.distributed:
         num_tasks = misc.get_world_size()
@@ -227,10 +226,10 @@ def main(args):
         mixup_fn = Mixup(
             mixup_alpha=args.mixup, cutmix_alpha=args.cutmix, cutmix_minmax=args.cutmix_minmax,
             prob=args.mixup_prob, switch_prob=args.mixup_switch_prob, mode=args.mixup_mode,
-            label_smoothing=args.smoothing, num_classes=args.nb_classes)
+            label_smoothing=args.smoothing, num_classes=nb_classes)
 
     model = models_YaTC.__dict__[args.model](
-        num_classes=args.nb_classes,
+        num_classes=nb_classes,
         drop_path_rate=args.drop_path,
     )
 

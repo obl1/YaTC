@@ -3,11 +3,10 @@
 # Parse command line arguments
 dataset_name="$1"
 google_url="$2"
-nb_classes="$3"
 epochs="${4:-200}"  # default to 200 if not provided
 
-if [[ -z "$dataset_name" || -z "$google_url" || -z "$nb_classes" ]]; then
-  echo "Usage: $0 <dataset_name> <google_drive_url> <nb_classes> [epochs (default=200)]"
+if [[ -z "$dataset_name"]]; then
+  echo "Usage: $0 <dataset_name> <google_drive_url> [epochs (default=200)]"
   exit 1
 fi
 
@@ -53,6 +52,12 @@ if [ ! -d "$FINE_TUNING_DATASET_DIR" ]; then
   # Make sure the datasets directory exists
   mkdir -p datasets
 
+  # Check if google drive url is provided
+  if [-z $google_url]; then
+    echo "No google drive url provided"
+    exit 1
+  fi
+
   # Download and unzip directly into datasets
   gdown "$google_url" -O "datasets/$FINE_TUNING_DATASET_ZIP_NAME" || exit 1
   unzip "datasets/$FINE_TUNING_DATASET_ZIP_NAME" -d datasets || exit 1
@@ -69,10 +74,9 @@ export LOCAL_RANK=0
 
 pwd
 
-python3 fine-tune-with-save.py \
+python3 fine-tune.py \
   --blr 2e-3 \
   --epochs "$epochs" \
   --data_path "./$dataset_name" \
-  --nb_classes "$nb_classes" \
   --num_workers 2 \
   --output_dir "YATC_${dataset_name}_out"
