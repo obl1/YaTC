@@ -47,10 +47,10 @@ class SupConLoss(nn.Module):
         elif labels is None and mask is None:
             mask = torch.eye(batch_size, dtype=torch.float32).to(device)
         elif labels is not None:
-            labels = labels.contiguous().view(-1, 1)
+            labels = labels.contiguous().view(-1, 1) # makes it a column vector
             if labels.shape[0] != batch_size:
                 raise ValueError('Num of labels does not match num of features')
-            mask = torch.eq(labels, labels.T).float().to(device)
+            mask = torch.eq(labels, labels.T).float().to(device) # mask is 1 if the labels are the same
         else:
             mask = mask.float().to(device)
 
@@ -68,13 +68,13 @@ class SupConLoss(nn.Module):
         # compute logits
         anchor_dot_contrast = torch.div(
             torch.matmul(anchor_feature, contrast_feature.T),
-            self.temperature)
+            self.temperature) # muls the features by themselves and divides by temperature
         # for numerical stability
         logits_max, _ = torch.max(anchor_dot_contrast, dim=1, keepdim=True)
         logits = anchor_dot_contrast - logits_max.detach()
 
         # tile mask
-        mask = mask.repeat(anchor_count, contrast_count)
+        mask = mask.repeat(anchor_count, contrast_count) # if mo augmentations this dose nothing
         # mask-out self-contrast cases
         logits_mask = torch.scatter(
             torch.ones_like(mask),
@@ -83,6 +83,8 @@ class SupConLoss(nn.Module):
             0
         )
         mask = mask * logits_mask
+
+        # after this, mask includes 4 "Ones" in each row, for the other 4 packets of the MFR
 
         # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask
@@ -97,7 +99,7 @@ class SupConLoss(nn.Module):
         # loss before mean:  [nan, ..., ..., nan] 
         mask_pos_pairs = mask.sum(1)
         mask_pos_pairs = torch.where(mask_pos_pairs < 1e-6, torch.ones_like(mask_pos_pairs), mask_pos_pairs)
-        mean_log_prob_pos = (mask * log_prob).sum(1) / mask_pos_pairs
+        mean_log_prob_pos = (mask * log_prob).sum(1) / mask_pos_pairs # this is the loss pre each row
 
         # loss
         loss = - (self.temperature / self.base_temperature) * mean_log_prob_pos
