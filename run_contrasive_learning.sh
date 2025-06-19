@@ -58,7 +58,7 @@ if [ ! -d "$DATASET_DIR" ]; then
   fi
 
   gdown "$google_url" -O "datasets/$DATASET_ZIP_NAME" || exit 1
-  unzip "datasets/$DATASET_ZIP_NAME" -d "datasets/${dataset_name}" || exit 1
+  unzip "datasets/$DATASET_ZIP_NAME" -d "datasets" || exit 1
   rm "datasets/$DATASET_ZIP_NAME"
 fi
 
