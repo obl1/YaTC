@@ -6,7 +6,7 @@ google_url="$2"
 epochs="${4:-200}"  # default to 200 if not provided
 
 if [[ -z "$dataset_name"]]; then
-  echo "Usage: $0 <dataset_name> <google_drive_url> [epochs (default=200)]"
+  echo "Usage: $0 <dataset_name> [<google_drive_url>] [epochs (default=200)]"
   exit 1
 fi
 

@@ -3,11 +3,10 @@
 # Parse command line arguments
 dataset_name="$1"
 google_url="$2"
-nb_classes="$3"
 epochs="${4:-200}"  # default to 200 if not provided
 
-if [[ -z "$dataset_name" || -z "$google_url" || -z "$nb_classes" ]]; then
-  echo "Usage: $0 <dataset_name> <google_drive_url> <nb_classes> [epochs (default=200)]"
+if [[ -z "$dataset_name"]]; then
+  echo "Usage: $0 <dataset_name> [<google_drive_url>] [epochs (default=200)]"
   exit 1
 fi
 
@@ -52,6 +51,12 @@ if [ ! -d "$DATASET_DIR" ]; then
 
   # Make sure the datasets directory exists
   mkdir -p datasets
+
+  # Check if google drive url is provided
+  if [-z $google_url]; then
+    echo "No google drive url provided"
+    exit 1
+  fi
 
   # Download and unzip directly into datasets
   gdown "$google_url" -O "datasets/$DATASET_ZIP_NAME" || exit 1
