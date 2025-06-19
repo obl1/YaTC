@@ -39,6 +39,12 @@ pip install --upgrade pip || exit 1
 pip install torch==1.8.1+cu111 torchvision==0.9.1+cu111 torchaudio==0.8.1 -f https://download.pytorch.org/whl/torch_stable.html || exit 1
 pip install gdown timm==0.3.2 numpy==1.19.5 scikit-learn==0.24.2 tensorboard scikit-image matplotlib || exit 1
 
+# Clone repo if needed
+if [ ! -d YaTC ]; then
+  git clone https://github.com/NSSL-SJTU/YaTC.git || exit 1
+fi
+
+cd YaTC || exit 1
 mkdir -p output_dir
 
 # Download pretrained model if not present
