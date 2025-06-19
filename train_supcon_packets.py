@@ -119,7 +119,7 @@ def parse_option():
 
 
 
-def train(train_loader, model, criterion, optimizer, epoch, opt):
+def train(train_loader, model, criterion, optimizer, epoch, opt, device):
     """one epoch training"""
     model.train()
 
@@ -128,38 +128,27 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
     losses = AverageMeter()
 
     end = time.time()
-    for idx, (images, _) in enumerate(train_loader):
+    for idx, (X, _) in enumerate(train_loader):
 
         # first, we create our custom labels - labeling each MFR
-        batch_size = images.shape[0]
+        batch_size = X.shape[0]
+        print(f"X: {X.shape}")
         labels = torch.tensor(range(batch_size)).repeat(5)
-        print(labels)
+        print(f"y: {labels.shape}")
+        X = X.to(device)
+        labels = labels.to(device)
 
         data_time.update(time.time() - end)
-
-        images = torch.cat([images[0], images[1]], dim=0)
-        if torch.cuda.is_available():
-            images = images.cuda(non_blocking=True)
-            labels = labels.cuda(non_blocking=True)
-        bsz = labels.shape[0]
 
         # warm-up learning rate
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
-        features = model(images)
-        f1, f2 = torch.split(features, [bsz, bsz], dim=0)
-        features = torch.cat([f1.unsqueeze(1), f2.unsqueeze(1)], dim=1)
-        if opt.method == 'SupCon':
-            loss = criterion(features, labels)
-        elif opt.method == 'SimCLR':
-            loss = criterion(features)
-        else:
-            raise ValueError('contrastive method not supported: {}'.
-                             format(opt.method))
+        features = model(X)
+        loss = criterion(features, labels)
 
         # update metric
-        losses.update(loss.item(), bsz)
+        losses.update(loss.item(), batch_size)
 
         # SGD
         optimizer.zero_grad()
@@ -204,7 +193,7 @@ def main():
 
         # train for one epoch
         time1 = time.time()
-        loss = train(train_loader, model, criterion, optimizer, epoch, opt)
+        loss = train(train_loader, model, criterion, optimizer, epoch, opt, device=device)
         time2 = time.time()
         print('epoch {}, total time {:.2f}, loss: {:.4f}'.format(epoch, time2 - time1, loss))
 
