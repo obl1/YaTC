@@ -4,7 +4,7 @@ import json
 import numpy as np
 import os
 import time
-from pathlib import Pathv
+from pathlib import Path
 import math
 import sys
 
@@ -376,7 +376,7 @@ def main(args):
 
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-        model_without_ddp = model.module
+        model_without_ddp = model.model.module
 
     # build optimizer with layer-wise lr decay (lrd)
     param_groups = lrd.param_groups_lrd(model_without_ddp, args.weight_decay,
