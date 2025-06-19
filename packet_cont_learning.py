@@ -55,6 +55,7 @@ class PacketYaTC(nn.Module):
         output: (B*5, 192)
         """
         packet_embeddings = []
+        print(x.shape)
         B, C, H, W = x.shape
         x = x.reshape(B, C, 5, -1)
         for i in range(5):

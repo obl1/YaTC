@@ -11,6 +11,7 @@ from supcon_util import AverageMeter
 from supcon_util import adjust_learning_rate, warmup_learning_rate
 from supcon_util import set_optimizer, save_model
 from supcon_loss import SupConLoss
+from torch.optim import AdamW
 
 
 
@@ -27,7 +28,7 @@ def parse_option():
                         help='print frequency')
     parser.add_argument('--save_freq', type=int, default=50,
                         help='save frequency')
-    parser.add_argument('--batch_size', type=int, default=128,
+    parser.add_argument('--batch_size', type=int, default=32,
                         help='batch_size')
     parser.add_argument('--epochs', type=int, default=1000,
                         help='number of training epochs')
@@ -129,16 +130,11 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
 
     end = time.time()
     for idx, (X, _) in enumerate(train_loader):
-        print("X:")
-        print(X)
-
         # first, we create our custom labels - labeling each MFR
         batch_size = X.shape[0]
         labels = torch.tensor(range(batch_size)).repeat(5)
         X = X.to(device)
         labels = labels.to(device)
-        print("X to device:")
-        print(X)
 
         data_time.update(time.time() - end)
 
@@ -146,12 +142,12 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
         warmup_learning_rate(opt, epoch, idx, len(train_loader), optimizer)
 
         # compute loss
+        print("X:")
+        print(X)
         features = model(X)
-        print("features:")
+        print(f"features {features.shape}:")
         print(features)
         features = features.unsqueeze(1)  # adds the 'n_views' dimension for SupConLoss
-        print("features unsqueezed:")
-        print(features)
         loss = criterion(features, labels)
         print(f'loss: {loss}')
 
@@ -182,6 +178,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
 
 def main():
     opt = parse_option()
+    print('cosine:', opt.cosine)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # build data loader
@@ -193,7 +190,8 @@ def main():
     criterion = SupConLoss(temperature=opt.temp)
 
     # build optimizer
-    optimizer = set_optimizer(opt, model)
+    # optimizer = set_optimizer(opt, model)
+    optimizer = AdamW(model.parameters())
 
     # training routine
     for epoch in range(1, opt.epochs + 1):
