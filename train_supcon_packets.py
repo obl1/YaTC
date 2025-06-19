@@ -6,12 +6,10 @@ import argparse
 import time
 import math
 import torch
-
 from packet_cont_learning import PacketYaTC, load_yatc_model, build_dl
-
-from util import AverageMeter
-from util import adjust_learning_rate, warmup_learning_rate
-from util import set_optimizer, save_model
+from supcon_util import AverageMeter
+from supcon_util import adjust_learning_rate, warmup_learning_rate
+from supcon_util import set_optimizer, save_model
 from supcon_loss import SupConLoss
 
 
@@ -31,8 +29,6 @@ def parse_option():
                         help='save frequency')
     parser.add_argument('--batch_size', type=int, default=256,
                         help='batch_size')
-    parser.add_argument('--num_workers', type=int, default=16,
-                        help='num of workers to use')
     parser.add_argument('--epochs', type=int, default=1000,
                         help='number of training epochs')
 
@@ -49,13 +45,11 @@ def parse_option():
                         help='momentum')
 
     # model dataset
-    parser.add_argument('--model', type=str, default='resnet50')
-    parser.add_argument('--dataset', type=str, default='cifar10',
+    parser.add_argument('--model', type=str, default='YaTC')
+    parser.add_argument('--dataset', type=str, default='path',
                         choices=['cifar10', 'cifar100', 'path'], help='dataset')
-    parser.add_argument('--mean', type=str, help='mean of dataset in path in form of str tuple')
-    parser.add_argument('--std', type=str, help='std of dataset in path in form of str tuple')
     parser.add_argument('--data_folder', type=str, default=None, help='path to custom dataset')
-    parser.add_argument('--size', type=int, default=32, help='parameter for RandomResizedCrop')
+    parser.add_argument('--base_model_path', type=str, default=None, help='path to base model')
 
     # method
     parser.add_argument('--method', type=str, default='SupCon',
@@ -79,9 +73,7 @@ def parse_option():
 
     # check if dataset is path that passed required arguments
     if opt.dataset == 'path':
-        assert opt.data_folder is not None \
-            and opt.mean is not None \
-            and opt.std is not None
+        assert opt.data_folder is not None 
 
     # set the path according to the environment
     if opt.data_folder is None:
@@ -198,7 +190,7 @@ def main():
     train_loader = build_dl(opt.data_folder, opt.batch_size, is_train=True)
 
     # build model and criterion
-    model = create_yatc_packet_model(opt.model_path)
+    model = create_yatc_packet_model(opt.base_model_path)
     criterion = SupConLoss(temperature=opt.temp)
 
     # build optimizer

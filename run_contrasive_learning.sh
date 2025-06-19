@@ -13,8 +13,8 @@ fi
 
 ENV_NAME="yatc"
 PRETRAINED_MODEL_NAME=./output_dir/pretrained-model.pth
-FINE_TUNING_DATASET_ZIP_NAME=data.zip
-FINE_TUNING_DATASET_DIR="datasets/${dataset_name}"
+DATASET_ZIP_NAME=data.zip
+DATASET_DIR="datasets/${dataset_name}"
 
 # Check if conda is available
 if ! command -v conda &> /dev/null; then
@@ -47,16 +47,16 @@ if [ ! -f "$PRETRAINED_MODEL_NAME" ]; then
 fi
 
 # Download fine-tuning dataset if not present
-if [ ! -d "$FINE_TUNING_DATASET_DIR" ]; then
+if [ ! -d "$DATASET_DIR" ]; then
   echo "Dataset ${dataset_name} not found in datasets/, downloading it..."
 
   # Make sure the datasets directory exists
   mkdir -p datasets
 
   # Download and unzip directly into datasets
-  gdown "$google_url" -O "datasets/$FINE_TUNING_DATASET_ZIP_NAME" || exit 1
-  unzip "datasets/$FINE_TUNING_DATASET_ZIP_NAME" -d datasets || exit 1
-  rm "datasets/$FINE_TUNING_DATASET_ZIP_NAME"
+  gdown "$google_url" -O "datasets/$DATASET_ZIP_NAME" || exit 1
+  unzip "datasets/$DATASET_ZIP_NAME" -d datasets || exit 1
+  rm "datasets/$DATASET_ZIP_NAME"
 fi
 
 # Set PYTHONPATH and run training
@@ -69,10 +69,6 @@ export LOCAL_RANK=0
 
 pwd
 
-python3 fine-tune-with-save.py \
-  --blr 2e-3 \
-  --epochs "$epochs" \
-  --data_path "./$dataset_name" \
-  --nb_classes "$nb_classes" \
-  --num_workers 2 \
-  --output_dir "YATC_${dataset_name}_out"
+python3 train_supcon_packets.py\
+ --base_model_path $PRETRAINED_MODEL_NAME\
+ --data_folder $DATASET_DIR
