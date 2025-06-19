@@ -15,8 +15,8 @@ from supcon_loss import SupConLoss
 
 
 
-def create_yatc_packet_model(model_path):
-    model = load_yatc_model(model_path)
+def create_yatc_packet_model(model_path, num_classes, device):
+    model = load_yatc_model(model_path, num_classes, device, from_pretrained=True)
     return PacketYaTC(model)
 
 
@@ -185,12 +185,14 @@ def train(train_loader, model, criterion, optimizer, epoch, opt):
 
 def main():
     opt = parse_option()
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     # build data loader
     train_loader = build_dl(opt.data_folder, opt.batch_size, is_train=True)
+    num_classes = len(train_loader.dataset.classes)
 
     # build model and criterion
-    model = create_yatc_packet_model(opt.base_model_path)
+    model = create_yatc_packet_model(opt.base_model_path,num_classes,device)
     criterion = SupConLoss(temperature=opt.temp)
 
     # build optimizer
