@@ -5,7 +5,7 @@ dataset_name="$1"
 google_url="$2"
 epochs="${4:-200}"  # default to 200 if not provided
 
-if [[ -z "$dataset_name"]]; then
+if [ -z "$dataset_name"]; then
   echo "Usage: $0 <dataset_name> [<google_drive_url>] [epochs (default=200)]"
   exit 1
 fi
@@ -60,7 +60,7 @@ if [ ! -d "$DATASET_DIR" ]; then
 
   # Download and unzip directly into datasets
   gdown "$google_url" -O "datasets/$DATASET_ZIP_NAME" || exit 1
-  unzip "datasets/$DATASET_ZIP_NAME" -d datasets || exit 1
+  unzip "datasets/$DATASET_ZIP_NAME" -d "datasets/${dataset_name}" || exit 1
   rm "datasets/$DATASET_ZIP_NAME"
 fi
 
