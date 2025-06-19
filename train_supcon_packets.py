@@ -146,6 +146,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
         features = features.unsqueeze(1)  # adds the 'n_views' dimension for SupConLoss
         print(features.shape)
         loss = criterion(features, labels)
+        print(f'loss: {loss}')
 
         # update metric
         losses.update(loss.item(), batch_size)
