@@ -248,7 +248,7 @@ def build_dataset(is_train, args):
 
 
 def main(args):
-    misc.init_distributed_mode(args)
+    # misc.init_distributed_mode(args)
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     print("{}".format(args).replace(', ', ',\n'))
@@ -268,7 +268,7 @@ def main(args):
     labels = dataset_val.classes
     nb_classes = len(labels)
 
-    if True:  # args.distributed:
+    if args.distributed:
         num_tasks = misc.get_world_size()
         global_rank = misc.get_rank()
         sampler_train = torch.utils.data.DistributedSampler(
