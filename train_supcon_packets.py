@@ -27,7 +27,7 @@ def parse_option():
                         help='print frequency')
     parser.add_argument('--save_freq', type=int, default=50,
                         help='save frequency')
-    parser.add_argument('--batch_size', type=int, default=256,
+    parser.add_argument('--batch_size', type=int, default=128,
                         help='batch_size')
     parser.add_argument('--epochs', type=int, default=1000,
                         help='number of training epochs')
@@ -132,9 +132,7 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
 
         # first, we create our custom labels - labeling each MFR
         batch_size = X.shape[0]
-        print(f"X: {X.shape}")
         labels = torch.tensor(range(batch_size)).repeat(5)
-        print(f"y: {labels.shape}")
         X = X.to(device)
         labels = labels.to(device)
 
