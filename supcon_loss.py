@@ -84,7 +84,7 @@ class SupConLoss(nn.Module):
         )
         mask = mask * logits_mask
 
-        # after this, mask includes 4 "Ones" in each row, for the other 4 packets of the MFR
+        # after this, mask includes 4 "Ones" in each row, for the other 4 packets of the same MFR
 
         # compute log_prob
         exp_logits = torch.exp(logits) * logits_mask
