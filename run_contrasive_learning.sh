@@ -3,16 +3,16 @@
 # Parse command line arguments
 dataset_name="$1"
 google_url="$2"
-epochs="${4:-200}"  # default to 200 if not provided
+epochs="${3:-200}"  # default to 200 if not provided
 
-if [ -z "$dataset_name"]; then
+if [ -z "$dataset_name" ]; then
   echo "Usage: $0 <dataset_name> [<google_drive_url>] [epochs (default=200)]"
   exit 1
 fi
 
 ENV_NAME="yatc"
-PRETRAINED_MODEL_NAME=./output_dir/pretrained-model.pth
-DATASET_ZIP_NAME=data.zip
+PRETRAINED_MODEL_NAME="./output_dir/pretrained-model.pth"
+DATASET_ZIP_NAME="data.zip"
 DATASET_DIR="datasets/${dataset_name}"
 
 # Check if conda is available
@@ -22,7 +22,7 @@ if ! command -v conda &> /dev/null; then
 fi
 
 # Check if conda environment exists
-if conda info --envs | grep -q "^$ENV_NAME\s"; then
+if conda info --envs | grep -q "^${ENV_NAME}[[:space:]]"; then
   echo "Conda environment '$ENV_NAME' already exists. Activating it..."
 else
   echo "Creating new conda environment '$ENV_NAME' with Python 3.8..."
@@ -42,6 +42,7 @@ mkdir -p output_dir
 
 # Download pretrained model if not present
 if [ ! -f "$PRETRAINED_MODEL_NAME" ]; then
+  echo "Downloading pretrained model..."
   gdown https://drive.google.com/uc?id=1wWmZN87NgwujSd2-o5nm3HaQUIzWlv16 -O "$PRETRAINED_MODEL_NAME" || exit 1
 fi
 
@@ -49,16 +50,13 @@ fi
 if [ ! -d "$DATASET_DIR" ]; then
   echo "Dataset ${dataset_name} not found in datasets/, downloading it..."
 
-  # Make sure the datasets directory exists
   mkdir -p datasets
 
-  # Check if google drive url is provided
-  if [-z $google_url]; then
-    echo "No google drive url provided"
+  if [ -z "$google_url" ]; then
+    echo "No Google Drive URL provided."
     exit 1
   fi
 
-  # Download and unzip directly into datasets
   gdown "$google_url" -O "datasets/$DATASET_ZIP_NAME" || exit 1
   unzip "datasets/$DATASET_ZIP_NAME" -d "datasets/${dataset_name}" || exit 1
   rm "datasets/$DATASET_ZIP_NAME"
@@ -72,8 +70,12 @@ export WORLD_SIZE=1
 export RANK=0
 export LOCAL_RANK=0
 
-pwd
+echo "Starting training with:"
+echo "  Dataset: $DATASET_DIR"
+echo "  Pretrained model: $PRETRAINED_MODEL_NAME"
+echo "  Epochs: $epochs"
 
-python3 train_supcon_packets.py\
- --base_model_path $PRETRAINED_MODEL_NAME\
- --data_folder $DATASET_DIR
+python3 train_supcon_packets.py \
+  --base_model_path "$PRETRAINED_MODEL_NAME" \
+  --data_folder "$DATASET_DIR" \
+  --epochs "$epochs"
