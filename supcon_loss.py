@@ -96,7 +96,8 @@ class SupConLoss(nn.Module):
         # labels:            [0,1,1,2]
         # loss before mean:  [nan, ..., ..., nan] 
         mask_pos_pairs = mask.sum(1)
-        mask_pos_pairs = torch.where(mask_pos_pairs < 1e-6, 1, mask_pos_pairs)
+        mask_pos_pairs = mask_pos_pairs.float() #added
+        mask_pos_pairs = torch.where(mask_pos_pairs < 1e-6, 1.0, mask_pos_pairs)
         mean_log_prob_pos = (mask * log_prob).sum(1) / mask_pos_pairs
 
         # loss
