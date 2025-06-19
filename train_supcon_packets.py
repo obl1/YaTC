@@ -129,12 +129,16 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
 
     end = time.time()
     for idx, (X, _) in enumerate(train_loader):
+        print("X:")
+        print(X)
 
         # first, we create our custom labels - labeling each MFR
         batch_size = X.shape[0]
         labels = torch.tensor(range(batch_size)).repeat(5)
         X = X.to(device)
         labels = labels.to(device)
+        print("X to device:")
+        print(X)
 
         data_time.update(time.time() - end)
 
@@ -143,8 +147,11 @@ def train(train_loader, model, criterion, optimizer, epoch, opt, device):
 
         # compute loss
         features = model(X)
+        print("features:")
+        print(features)
         features = features.unsqueeze(1)  # adds the 'n_views' dimension for SupConLoss
-        print(features.shape)
+        print("features unsqueezed:")
+        print(features)
         loss = criterion(features, labels)
         print(f'loss: {loss}')
 
