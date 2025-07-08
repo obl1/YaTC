@@ -5,7 +5,7 @@ dataset_name="$1"
 google_url="$2"
 epochs="${4:-200}"  # default to 200 if not provided
 
-if [[ -z "$dataset_name"]]; then
+if [[ -z "$dataset_name" ]]; then
   echo "Usage: $0 <dataset_name> [<google_drive_url>] [epochs (default=200)]"
   exit 1
 fi
@@ -53,7 +53,7 @@ if [ ! -d "$FINE_TUNING_DATASET_DIR" ]; then
   mkdir -p datasets
 
   # Check if google drive url is provided
-  if [-z $google_url]; then
+  if [ -z $google_url ]; then
     echo "No google drive url provided"
     exit 1
   fi

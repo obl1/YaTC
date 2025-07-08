@@ -187,6 +187,7 @@ def train_one_epoch_supcon(model: torch.nn.Module, criterion: torch.nn.Module,
 
         with torch.cuda.amp.autocast():
             outputs = model(samples)
+            outputs = outputs.unsqueeze(1)
             loss = criterion(outputs, targets)
 
         # _, pred = outputs.topk(1, 1, True, True)
@@ -248,7 +249,9 @@ def build_dataset(is_train, args):
 
 
 def main(args):
-    # misc.init_distributed_mode(args)
+    misc.init_distributed_mode(args)
+    args.distributed = False
+    global_rank = misc.get_rank()
 
     print('job dir: {}'.format(os.path.dirname(os.path.realpath(__file__))))
     print("{}".format(args).replace(', ', ',\n'))
@@ -357,7 +360,7 @@ def main(args):
 
     model.to(device)
 
-    model_without_ddp = model
+    model_without_ddp = model.model
     n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
 
     print("Model = %s" % str(model_without_ddp))
