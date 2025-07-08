@@ -77,6 +77,6 @@ pwd
 python3 fine-tune.py \
   --blr 2e-3 \
   --epochs "$epochs" \
-  --data_path "./$dataset_name" \
+  --data_path "./$FINE_TUNING_DATASET_DIR" \
   --num_workers 2 \
-  --output_dir "YATC_${dataset_name}_out"
+  --output_dir "${dataset_name}_out"
