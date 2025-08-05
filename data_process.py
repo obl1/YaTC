@@ -87,7 +87,7 @@ def yatc_split(base_path, split_ratio=0.8, random_seed=42):
     test_dir.mkdir(parents=True, exist_ok=True)
 
     # For each class folder in mix/
-    for class_folder in tqdm.tqdm([x for x in mix_dir.iterdir()]):
+    for class_folder in tqdm([x for x in mix_dir.iterdir()]):
         if class_folder.is_dir():
             images = list(class_folder.glob("*"))
             random.shuffle(images)
